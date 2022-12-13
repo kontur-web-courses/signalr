@@ -1,4 +1,5 @@
 ﻿@using BadNews.Elevation
+@using BadNews.BlazorComponents
 @model BadNews.Models.News.FullArticleModel
 
 <main role="main" class="container">
@@ -24,6 +25,7 @@
             <vc:weather></vc:weather>
             <vc:archive-links></vc:archive-links>
         </aside>
+        @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
     </div>
 </main>
 
