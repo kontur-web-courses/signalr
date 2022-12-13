@@ -1,5 +1,5 @@
 @using BadNews.Repositories.Comments
-@inject CommentsRepository commentsRepository;
+@inject ICommentsRepository commentsRepository;
 <div>
     @foreach (var comment in comments)
     {
