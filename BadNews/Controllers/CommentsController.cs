@@ -11,7 +11,7 @@ namespace BadNews.Controllers
     {
         private readonly ICommentsRepository commentsRepository;
 
-        public CommentsController(CommentsRepository commentsRepository)
+        public CommentsController(ICommentsRepository commentsRepository)
         {
             this.commentsRepository = commentsRepository;
         }
