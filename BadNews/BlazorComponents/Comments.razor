@@ -1,6 +1,6 @@
 ﻿@using BadNews.Repositories.Comments
 @using Microsoft.AspNetCore.SignalR.Client
-@inject CommentsRepository commentsRepository;
+@inject ICommentsRepository commentsRepository;
 @inject NavigationManager navigationManager
 @implements IAsyncDisposable
 <div>
