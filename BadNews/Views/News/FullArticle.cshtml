@@ -1,6 +1,10 @@
 ﻿@using BadNews.Elevation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using BadNews.BlazorComponents
+@using BadNews.Components
 @model BadNews.Models.News.FullArticleModel
-
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+<script src="/js/signalr/dist/browser/signalr.js"></script>
 <main role="main" class="container">
     <div class="row">
         <div class="col-md-8 news-main">
@@ -17,6 +21,9 @@
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
+                <div id="comments">
+                    @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
+                </div>
             </div>
         </div>
 
