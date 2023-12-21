@@ -1,4 +1,7 @@
 ﻿@using BadNews.Elevation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using BadNews.BlazorComponents
+@using BadNews.Components
 @model BadNews.Models.News.FullArticleModel
 
 <main role="main" class="container">
@@ -17,6 +20,7 @@
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
+                @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
             </div>
         </div>
 
