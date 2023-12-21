@@ -43,10 +43,11 @@ namespace BadNews
                 options.EnableForHttps = true;
             });
             services.AddMemoryCache();
-            services.AddSignalR();
             var mvcBuilder = services.AddControllersWithViews();
             if (env.IsDevelopment())
                 mvcBuilder.AddRazorRuntimeCompilation();
+            services.AddSignalR();
+            services.AddServerSideBlazor();
         }
 
         // В этом методе конфигурируется последовательность обработки HTTP-запроса
@@ -59,18 +60,7 @@ namespace BadNews
 
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                OnPrepareResponse = options =>
-                {
-                    options.Context.Response.GetTypedHeaders().CacheControl =
-                        new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
-                        {
-                            Public = false,
-                            MaxAge = TimeSpan.FromDays(1)
-                        };
-                }
-            });
+            app.UseStaticFiles();
             app.UseSerilogRequestLogging();
             app.UseStatusCodePagesWithReExecute("/StatusCode/{0}");
 
@@ -84,6 +74,7 @@ namespace BadNews
                     action = "StatusCode"
                 });
                 endpoints.MapHub<CommentsHub>("/commentsHub");
+                endpoints.MapBlazorHub();
                 endpoints.MapControllerRoute("default", "{controller=News}/{action=Index}/{id?}");
             });
             app.MapWhen(context => context.Request.IsElevated(), branchApp =>
