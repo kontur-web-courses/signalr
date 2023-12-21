@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
+using BadNews.Hubs;
+using BadNews.Repositories.Comments;
 
 namespace BadNews
 {
@@ -35,6 +37,9 @@ namespace BadNews
             services.AddSingleton<IValidationAttributeAdapterProvider, StopWordsAttributeAdapterProvider>();
             services.AddSingleton<IWeatherForecastRepository, WeatherForecastRepository>();
             services.Configure<OpenWeatherOptions>(configuration.GetSection("OpenWeather"));
+            services.AddSingleton<CommentsRepository>();
+            services.AddServerSideBlazor();
+            
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
@@ -43,6 +48,7 @@ namespace BadNews
             var mvcBuilder = services.AddControllersWithViews();
             if (env.IsDevelopment())
                 mvcBuilder.AddRazorRuntimeCompilation();
+            services.AddSignalR();
         }
 
         // В этом методе конфигурируется последовательность обработки HTTP-запроса
@@ -53,20 +59,10 @@ namespace BadNews
             else
                 app.UseExceptionHandler("/Errors/Exception");
 
+
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                OnPrepareResponse = options =>
-                {
-                    options.Context.Response.GetTypedHeaders().CacheControl =
-                        new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
-                        {
-                            Public = false,
-                            MaxAge = TimeSpan.FromDays(1)
-                        };
-                }
-            });
+            app.UseStaticFiles();
             app.UseSerilogRequestLogging();
             app.UseStatusCodePagesWithReExecute("/StatusCode/{0}");
 
@@ -74,6 +70,8 @@ namespace BadNews
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<CommentsHub>("/commentsHub");
+                endpoints.MapBlazorHub();
                 endpoints.MapControllerRoute("status-code", "StatusCode/{code?}", new
                 {
                     controller = "Errors",
