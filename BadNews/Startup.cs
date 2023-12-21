@@ -3,6 +3,7 @@ using BadNews.ModelBuilders.News;
 using BadNews.Repositories.News;
 using BadNews.Repositories.Weather;
 using BadNews.Validation;
+using BadNews.Repositories.Comments;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -34,6 +35,7 @@ namespace BadNews
             services.AddSingleton<INewsRepository, NewsIndexedRepository>();
             services.AddSingleton<INewsModelBuilder, NewsModelBuilder>();
             services.AddSingleton<IValidationAttributeAdapterProvider, StopWordsAttributeAdapterProvider>();
+            services.AddSingleton<ICommentsRepository, CommentsRepository>();
             services.AddSingleton<IWeatherForecastRepository, WeatherForecastRepository>();
             services.Configure<OpenWeatherOptions>(configuration.GetSection("OpenWeather"));
             services.AddResponseCompression(options =>
