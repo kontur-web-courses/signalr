@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using BadNews.Repositories.Comments;
-
 namespace BadNews.Models.Comments
 {
     public class CommentDto
