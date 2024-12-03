@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body>  
     <div class="container">
         <header class="news-header">
             <a class="news-header-logo text-dark" href="/">Bad News</a>
@@ -27,8 +27,11 @@
         @RenderSection("Header", false)
     </div>
 
-    @RenderBody()
+    <base href="~/" />
 
+    @RenderBody()
+    
+    <script src="_framework/blazor.server.js"></script>
     <script src="/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.js" asp-append-version="true"></script>
     <script src="/js/site.js" asp-append-version="true"></script>
