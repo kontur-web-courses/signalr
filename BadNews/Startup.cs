@@ -12,6 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
+using BadNews.Controllers;
+using BadNews.Hubs;
+using BadNews.Models.Comments;
+using BadNews.Repositories.Comments;
 
 namespace BadNews
 {
@@ -34,12 +38,15 @@ namespace BadNews
             services.AddSingleton<INewsModelBuilder, NewsModelBuilder>();
             services.AddSingleton<IValidationAttributeAdapterProvider, StopWordsAttributeAdapterProvider>();
             services.AddSingleton<IWeatherForecastRepository, WeatherForecastRepository>();
+            services.AddSingleton<CommentsRepository>();
             services.Configure<OpenWeatherOptions>(configuration.GetSection("OpenWeather"));
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
             });
             services.AddMemoryCache();
+            services.AddSignalR();
+            services.AddServerSideBlazor();
             var mvcBuilder = services.AddControllersWithViews();
             if (env.IsDevelopment())
                 mvcBuilder.AddRazorRuntimeCompilation();
@@ -55,18 +62,8 @@ namespace BadNews
 
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                OnPrepareResponse = options =>
-                {
-                    options.Context.Response.GetTypedHeaders().CacheControl =
-                        new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
-                        {
-                            Public = false,
-                            MaxAge = TimeSpan.FromDays(1)
-                        };
-                }
-            });
+            app.UseStaticFiles();
+            
             app.UseSerilogRequestLogging();
             app.UseStatusCodePagesWithReExecute("/StatusCode/{0}");
 
@@ -80,6 +77,8 @@ namespace BadNews
                     action = "StatusCode"
                 });
                 endpoints.MapControllerRoute("default", "{controller=News}/{action=Index}/{id?}");
+                endpoints.MapHub<CommentsHub>("/commentsHub");
+                endpoints.MapBlazorHub();
             });
             app.MapWhen(context => context.Request.IsElevated(), branchApp =>
             {
