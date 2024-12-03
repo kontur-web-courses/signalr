@@ -20,15 +20,6 @@
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
-                <label>
-                    Пользователь <input id="userInput">
-                </label>
-                <label>
-                    Комментарий <input id="commentInput">
-                </label>
-                <div>
-                    <button id="sendButton">Отправить</button>
-                </div>
                 @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
             </div>
         </div>
