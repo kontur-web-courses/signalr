@@ -1,5 +1,6 @@
 ﻿@using BadNews.Elevation
 @model BadNews.Models.News.FullArticleModel
+<script src="/lib/jquery/dist/jquery.min.js"></script>
 
 <main role="main" class="container">
     <div class="row">
@@ -17,6 +18,9 @@
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
+                <div id="comments">
+                    @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
+                    </div>
             </div>
         </div>
 
