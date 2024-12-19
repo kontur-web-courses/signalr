@@ -1,4 +1,6 @@
-﻿@using BadNews.Elevation
+﻿@using BadNews.BlazorComponents
+@using BadNews.Components
+@using BadNews.Elevation
 @model BadNews.Models.News.FullArticleModel
 
 <main role="main" class="container">
@@ -18,6 +20,10 @@
                 }
                 @Html.Raw(Model.Article.ContentHtml)
             </div>
+        </div>
+
+        <div id="comments">
+            @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
         </div>
 
         <aside class="col-md-4 news-sidebar">
