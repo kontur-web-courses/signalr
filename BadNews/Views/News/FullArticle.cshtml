@@ -1,5 +1,11 @@
-﻿@using BadNews.Elevation
+﻿@using BadNews.BlazorComponents
+@using BadNews.Components
+@using BadNews.Elevation
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model BadNews.Models.News.FullArticleModel
+
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+<script src="/js/signalr/dist/browser/signalr.js"></script>
 
 <main role="main" class="container">
     <div class="row">
@@ -12,12 +18,15 @@
                 @if (ViewContext.IsElevated())
                 {
                     <form class="mb-4" onsubmit="return confirm('Удалить новость?')"
-                        asp-controller="Editor" asp-action="DeleteArticle" asp-route-id="@(Model.Article.Id)">
+                          asp-controller="Editor" asp-action="DeleteArticle" asp-route-id="@(Model.Article.Id)">
                         <button type="submit" class="btn-danger">Удалить</button>
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
             </div>
+            
+            @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
+            
         </div>
 
         <aside class="col-md-4 news-sidebar">
