@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
+using BadNews.Hubs;
+using BadNews.Repositories.Comments;
 
 namespace BadNews
 {
@@ -30,6 +32,9 @@ namespace BadNews
         // В этом методе добавляются сервисы в DI-контейнер
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddServerSideBlazor();
+            services.AddSignalR();
+            services.AddScoped<CommentsRepository>();
             services.AddSingleton<INewsRepository, NewsIndexedRepository>();
             services.AddSingleton<INewsModelBuilder, NewsModelBuilder>();
             services.AddSingleton<IValidationAttributeAdapterProvider, StopWordsAttributeAdapterProvider>();
@@ -74,6 +79,8 @@ namespace BadNews
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapBlazorHub();
+                endpoints.MapHub<CommentsHub>("/commentsHub");
                 endpoints.MapControllerRoute("status-code", "StatusCode/{code?}", new
                 {
                     controller = "Errors",
