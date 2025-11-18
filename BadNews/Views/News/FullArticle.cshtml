@@ -18,6 +18,8 @@
                 }
                 @Html.Raw(Model.Article.ContentHtml)
             </div>
+
+            @(await Html.RenderComponentAsync<BadNews.BlazorComponents.Comments>(RenderMode.ServerPrerendered, new { ArticleId = Model.Article.Id }))
         </div>
 
         <aside class="col-md-4 news-sidebar">
