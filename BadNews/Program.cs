@@ -67,6 +67,8 @@ namespace BadNews
 
             var repository = new NewsRepository();
             repository.InitializeDataBase(articles);
+            
+            
         }
     }
 }
