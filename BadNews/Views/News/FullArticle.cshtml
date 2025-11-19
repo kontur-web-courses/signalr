@@ -1,4 +1,8 @@
 ﻿@using BadNews.Elevation
+@using BadNews.BlazorComponents
+@using BadNews.Components
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+<script src="/js/signalr/dist/browser/signalr.js"></script>
 @model BadNews.Models.News.FullArticleModel
 
 <main role="main" class="container">
@@ -17,6 +21,8 @@
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
+                @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
+                <div id="comments"></div>
             </div>
         </div>
 
