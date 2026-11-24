@@ -1,5 +1,6 @@
 ﻿using BadNews.Elevation;
 using BadNews.ModelBuilders.News;
+using BadNews.Repositories.Comments;
 using BadNews.Repositories.News;
 using BadNews.Repositories.Weather;
 using BadNews.Validation;
@@ -32,6 +33,7 @@ namespace BadNews
         {
             services.AddSingleton<INewsRepository, NewsIndexedRepository>();
             services.AddSingleton<INewsModelBuilder, NewsModelBuilder>();
+            services.AddSingleton<CommentsRepository>();
             services.AddSingleton<IValidationAttributeAdapterProvider, StopWordsAttributeAdapterProvider>();
             services.AddSingleton<IWeatherForecastRepository, WeatherForecastRepository>();
             services.Configure<OpenWeatherOptions>(configuration.GetSection("OpenWeather"));
