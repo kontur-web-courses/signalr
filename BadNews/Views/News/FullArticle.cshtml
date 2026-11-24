@@ -1,4 +1,5 @@
 ﻿@using BadNews.Elevation
+@using BadNews.BlazorComponents
 @model BadNews.Models.News.FullArticleModel
 
 <main role="main" class="container">
@@ -17,16 +18,7 @@
                     </form>
                 }
                 @Html.Raw(Model.Article.ContentHtml)
-                <div id="comments"></div>
-                <label>
-                    Пользователь <input id="userInput">
-                </label>
-                <label>
-                    Комментарий <input id="commentInput">
-                </label>
-                <div>
-                    <button id="sendButton">Отправить</button>
-                </div>
+                @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered, new { ArticleId = Model.Article.Id }))
             </div>
         </div>
 
@@ -42,19 +34,3 @@
         <a href="#">Наверх</a>
     </p>
 </footer>
-
-@section Scripts {
-    <script type="text/javascript">
-        $.get(`/api/news/@Model.Article.Id/comments`, function(data) {
-            const commentsDiv = document.getElementById('comments');
-
-            for (const comment of data.comments) {
-                const li = document.createElement("li");
-                li.textContent = `${comment.user} говорит: ${comment.value}`;
-                commentsDiv.appendChild(li);
-            }
-        }).fail(function(error) {
-            console.error("Не удалось загрузить комментарии.", error);
-        });
-    </script>
-}
