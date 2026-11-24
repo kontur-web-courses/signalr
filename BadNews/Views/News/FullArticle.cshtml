@@ -19,7 +19,9 @@
                 }
                 @Html.Raw(Model.Article.ContentHtml)
                 
-                <div id="comments" />
+                <div id="comments">
+                    @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
+                </div>
             </div>
         </div>
 
@@ -29,7 +31,6 @@
         </aside>
     </div>
     
-    @(await Html.RenderComponentAsync<Comments>(RenderMode.ServerPrerendered))
 </main>
 
 <footer class="news-footer">
