@@ -1,0 +1,175 @@
+@using System.Linq
+@using BadNews.Hubs
+@using BadNews.Repositories.Comments
+@using Microsoft.AspNetCore.Hosting.Server
+@using Microsoft.AspNetCore.Hosting.Server.Features
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Logging
+@implements IAsyncDisposable
+@inject CommentsRepository CommentsRepository
+@inject IServer Server
+@inject ILogger<Comments> Logger
+
+<section aria-labelledby="comments-heading">
+    <h5 id="comments-heading">Комментарии</h5>
+    @if (comments.Count == 0)
+    {
+        <p>Пока нет комментариев.</p>
+    }
+    <ul id="comments" aria-live="polite">
+        @foreach (var comment in comments)
+        {
+            <li>@comment.User говорит: @comment.Value</li>
+        }
+    </ul>
+
+    <form id="commentForm" @onsubmit="SendAsync" @onsubmit:preventDefault="true">
+        <div class="form-group">
+            <label for="userInput">Пользователь</label>
+            <input id="userInput" class="form-control" @bind="userInput" @bind:event="oninput" required />
+        </div>
+        <div class="form-group">
+            <label for="commentInput">Комментарий</label>
+            <input id="commentInput" class="form-control" @bind="messageInput" @bind:event="oninput" required />
+        </div>
+        <button id="sendButton" type="submit" class="btn btn-primary" disabled="@(!CanSend)">Отправить</button>
+        <p id="comment-send-status" role="status">@status</p>
+    </form>
+</section>
+
+@code {
+    private readonly List<Comment> comments = new();
+    private Guid? loadedArticleId;
+    private HubConnection hubConnection;
+    private string userInput = string.Empty;
+    private string messageInput = string.Empty;
+    private string status = "Подключение к комментариям…";
+    private bool sending;
+    private bool disposed;
+
+    [Parameter, EditorRequired]
+    public Guid ArticleId { get; set; }
+
+    private bool CanSend => !sending && hubConnection?.State == HubConnectionState.Connected;
+
+    protected override void OnParametersSet()
+    {
+        if (loadedArticleId == ArticleId)
+            return;
+
+        comments.Clear();
+        comments.AddRange(CommentsRepository.GetComments(ArticleId));
+        loadedArticleId = ArticleId;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        try
+        {
+            var hubUri = GetCommentsHubUri();
+            var useIPv4Loopback = hubUri.Host == "localhost";
+            var connectionUri = useIPv4Loopback ? new UriBuilder(hubUri) { Host = "127.0.0.1" }.Uri : hubUri;
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(connectionUri, options =>
+                {
+                    if (useIPv4Loopback)
+                        options.Headers["Host"] = hubUri.Authority;
+                })
+                .Build();
+
+            hubConnection.On<string, string>("ReceiveComment", (user, message) => InvokeAsync(() =>
+            {
+                if (disposed)
+                    return;
+
+                comments.Add(new Comment(user, message));
+                StateHasChanged();
+            }));
+
+            hubConnection.Closed += _ => InvokeAsync(() =>
+            {
+                if (disposed)
+                    return;
+
+                status = "Соединение потеряно. Обновите страницу.";
+                StateHasChanged();
+            });
+
+            await hubConnection.StartAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                status = string.Empty;
+        }
+        catch (Exception exception)
+        {
+            if (disposed)
+                return;
+
+            Logger.LogWarning(exception, "Unable to connect to the comments hub.");
+            status = "Не удалось подключиться к комментариям.";
+        }
+
+        if (!disposed)
+            StateHasChanged();
+    }
+
+    private async Task SendAsync()
+    {
+        if (!CanSend)
+            return;
+
+        var submittedMessage = messageInput;
+        if (string.IsNullOrWhiteSpace(userInput) || string.IsNullOrWhiteSpace(submittedMessage))
+        {
+            status = "Укажите имя и текст комментария.";
+            return;
+        }
+
+        sending = true;
+        status = string.Empty;
+        try
+        {
+            await hubConnection.InvokeAsync(nameof(CommentsHub.SendComment), userInput.Trim(), submittedMessage.Trim());
+            if (messageInput == submittedMessage)
+                messageInput = string.Empty;
+        }
+        catch (Exception exception)
+        {
+            if (!disposed && hubConnection.State == HubConnectionState.Connected)
+            {
+                Logger.LogWarning(exception, "Unable to send a comment.");
+                status = "Не удалось отправить комментарий.";
+            }
+        }
+        finally
+        {
+            sending = false;
+        }
+    }
+
+    private Uri GetCommentsHubUri()
+    {
+        var address = Server.Features.Get<IServerAddressesFeature>()?.Addresses
+            .Select(BindingAddress.Parse)
+            .Where(binding => !binding.IsUnixPipe && !binding.IsNamedPipe)
+            .OrderByDescending(binding => binding.Scheme == Uri.UriSchemeHttps)
+            .FirstOrDefault();
+
+        if (address is null)
+            throw new InvalidOperationException("The comments hub requires an HTTP or HTTPS server address.");
+
+        var host = address.Host is "*" or "+" or "0.0.0.0" or "[::]" ? "localhost" : address.Host;
+        return new UriBuilder(address.Scheme, host, address.Port, "/commentsHub").Uri;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        disposed = true;
+        if (hubConnection is not null)
+            await hubConnection.DisposeAsync();
+    }
+}
