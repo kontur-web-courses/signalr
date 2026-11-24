@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BadNews.Repositories.Comments
 {
-    public class CommentsRepository : ICommentsRepository
+    public class CommentsRepository
     {
         public IReadOnlyCollection<Comment> GetComments(Guid newsId)
         {
@@ -13,9 +13,5 @@ namespace BadNews.Repositories.Comments
                 new Comment("Воробушек", "ЧИК-ЧИРИК"),
             };
         }
-    }
-
-    public interface ICommentsRepository
-    {
     }
 }

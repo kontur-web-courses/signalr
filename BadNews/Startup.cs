@@ -32,7 +32,7 @@ namespace BadNews
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<INewsRepository, NewsIndexedRepository>();
-            services.AddSingleton<ICommentsRepository, CommentsRepository>();
+            services.AddSingleton<CommentsRepository>();
             services.AddSingleton<INewsModelBuilder, NewsModelBuilder>();
             services.AddSingleton<IValidationAttributeAdapterProvider, StopWordsAttributeAdapterProvider>();
             services.AddSingleton<IWeatherForecastRepository, WeatherForecastRepository>();
