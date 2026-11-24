@@ -18,9 +18,9 @@ public class CommentsController : ControllerBase
 
     // GET
     [HttpGet("api/news/{id}/comments")]
-    public ActionResult<CommentsDto> GetCommentsForNews(Guid newsId)
+    public ActionResult<CommentsDto> GetCommentsForNews(Guid id)
     {
-        var comments = commentsRepository.GetComments(newsId).Select(x => new CommentDto
+        var comments = commentsRepository.GetComments(id).Select(x => new CommentDto
         {
             User = x.User,
             Value = x.Value,
@@ -28,7 +28,7 @@ public class CommentsController : ControllerBase
         
         var commentsDto = new CommentsDto
         {
-            NewsId = newsId,
+            NewsId = id,
             Comments = [.. comments]
         };
         return Ok(commentsDto);
