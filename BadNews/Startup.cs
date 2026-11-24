@@ -32,6 +32,8 @@ namespace BadNews
         // В этом методе добавляются сервисы в DI-контейнер
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddServerSideBlazor();
+            
             services.AddSignalR();
             
             services.AddSingleton<CommentsRepository>();
@@ -61,18 +63,7 @@ namespace BadNews
 
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                OnPrepareResponse = options =>
-                {
-                    options.Context.Response.GetTypedHeaders().CacheControl =
-                        new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
-                        {
-                            Public = false,
-                            MaxAge = TimeSpan.FromDays(1)
-                        };
-                }
-            });
+            app.UseStaticFiles();
             app.UseSerilogRequestLogging();
             app.UseStatusCodePagesWithReExecute("/StatusCode/{0}");
 
@@ -80,6 +71,8 @@ namespace BadNews
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapBlazorHub();
+                
                 endpoints.MapHub<CommentsHub>("/commentsHub");
                 
                 endpoints.MapControllerRoute("status-code", "StatusCode/{code?}", new
