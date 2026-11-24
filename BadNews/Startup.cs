@@ -1,4 +1,5 @@
 ﻿using BadNews.Elevation;
+using BadNews.Hubs;
 using BadNews.ModelBuilders.News;
 using BadNews.Repositories.Comments;
 using BadNews.Repositories.News;
@@ -31,6 +32,7 @@ namespace BadNews
         // В этом методе добавляются сервисы в DI-контейнер
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
             services.AddSingleton<INewsRepository, NewsIndexedRepository>();
             services.AddSingleton<INewsModelBuilder, NewsModelBuilder>();
             services.AddSingleton<CommentsRepository>();
@@ -82,6 +84,7 @@ namespace BadNews
                     action = "StatusCode"
                 });
                 endpoints.MapControllerRoute("default", "{controller=News}/{action=Index}/{id?}");
+                endpoints.MapHub<CommentsHub>("/commentsHub");
             });
             app.MapWhen(context => context.Request.IsElevated(), branchApp =>
             {
